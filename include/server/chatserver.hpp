@@ -10,25 +10,25 @@ using namespace muduo::net;
 class ChatServer
 {
 public:
-	// 初始化聊天服务器对象
-	ChatServer(EventLoop *loop,
-		const InetAddress &listenAddr,
-		const std::string &nameArg);
+  // 初始化聊天服务器对象
+  ChatServer(EventLoop *loop,
+             const InetAddress &listenAddr,
+             const std::string &nameArg);
 
-    // 开启事件循环
-	void start();
+  // 开启事件循环
+  void start();
 
 private:
-    // 连接相关信息的回调函数（新连接到来/旧连接断开）
-    void onConnection(const TcpConnectionPtr &);
+  // 连接相关信息的回调函数（新连接到来/旧连接断开）
+  void onConnection(const TcpConnectionPtr &);
 
-    // 读写事件相关信息的回调函数
-    void onMessage(const TcpConnectionPtr &,
-                   Buffer *,
-                   Timestamp);
+  // 读写事件相关信息的回调函数
+  void onMessage(const TcpConnectionPtr &,
+                 Buffer *,
+                 Timestamp);
 
-	TcpServer _server;  
-	EventLoop *_loop;
+  TcpServer _server;
+  EventLoop *_loop;
 };
 
 #endif // CHATSERVER_H

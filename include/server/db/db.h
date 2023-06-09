@@ -1,4 +1,4 @@
-#ifndef DB_H
+#ifndef DB_H  //头文件保护
 #define DB_H
 
 // TODO:封装太简单，可以增加MySQL连接池
