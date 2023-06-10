@@ -6,7 +6,7 @@
 #include <string>
 using namespace std;
 using namespace placeholders;
-using json = nlohmann::json;
+typedef nlohmann::json json; // 使用typedef重命名nlohmann::json->json方便后续使用
 
 // 初始化聊天服务器对象
 ChatServer::ChatServer(EventLoop *loop,
@@ -51,9 +51,9 @@ void ChatServer::onConnection(const TcpConnectionPtr &conn)
 }
 
 /* 上报读写事件相关信息的回调函数
-*  这段代码实现了将客户端发送过来的消息进行解析，并根据消息类型调用相应的业务处理器来处理该消息。
-*  通过这种方式，实现了网络模块与业务模块的解耦，使得代码结构更加灵活和可扩展。
-*/
+ *  这段代码实现了将客户端发送过来的消息进行解析，并根据消息类型调用相应的业务处理器来处理该消息。
+ *  通过这种方式，实现了网络模块与业务模块的解耦，使得代码结构更加灵活和可扩展。
+ */
 void ChatServer::onMessage(const TcpConnectionPtr &conn,
                            Buffer *buffer,
                            Timestamp time)
