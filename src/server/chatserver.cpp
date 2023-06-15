@@ -37,6 +37,7 @@ void ChatServer::start()
  */
 void ChatServer::onConnection(const TcpConnectionPtr &conn)
 {
+    LOG_INFO << "用户连接服务器！\n";
     // 客户端断开连接
     if (!conn->connected())
     {
@@ -47,7 +48,8 @@ void ChatServer::onConnection(const TcpConnectionPtr &conn)
     }
 }
 
-/* 上报读写事件相关信息的回调函数
+/* 
+ *  上报读写事件相关信息的回调函数
  *  这段代码实现了将客户端发送过来的消息进行解析，并根据消息类型调用相应的业务处理器来处理该消息。
  *  通过这种方式，实现了网络模块与业务模块的解耦，使得代码结构更加灵活和可扩展。
  */
