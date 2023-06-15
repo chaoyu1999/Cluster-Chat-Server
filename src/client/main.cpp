@@ -30,7 +30,7 @@ vector<User> g_currentUserFriendList;
 vector<Group> g_currentUserGroupList;
 
 // 控制主菜单页面程序
-bool isMainMenuRunning = false;
+atomic_bool isMainMenuRunning = false;
 
 // 用于读写线程之间的通信
 sem_t rwsem;
@@ -85,7 +85,7 @@ int main(int argc, char **argv)
     }
 
     // 初始化读写线程通信用的信号量
-    sem_init(&rwsem, 0, 0);
+    sem_init(&rwsem, 0, 0); //sem指向要初始化的信号量的指针;pshared如果为0，则信号量将在当前进程的线程之间共享,如果非零，则信号量可以在多个进程之间共享；如果非零，则信号量可以在多个进程之间共享
 
     // 连接服务器成功，启动接收子线程
     std::thread readTask(readTaskHandler, clientfd); // pthread_create
@@ -283,13 +283,16 @@ void doLoginResponse(json &responsejs)
     }
 }
 
+
+
+
 // 子线程 - 接收线程
 void readTaskHandler(int clientfd)
 {
     for (;;)
     {
         char buffer[1024] = {0};
-        int len = recv(clientfd, buffer, 1024, 0);  // 阻塞了
+        int len = recv(clientfd, buffer, 1024, 0);  // 等待接收服务器消息阻塞了
         if (-1 == len || 0 == len)
         {
             close(clientfd);
@@ -422,6 +425,7 @@ void mainMenu(int clientfd)
 
         // 调用相应命令的事件处理回调，mainMenu对修改封闭，添加新功能不需要修改该函数
         it->second(clientfd, commandbuf.substr(idx + 1, commandbuf.size() - idx)); // 调用命令处理方法
+        
     }
 }
 
@@ -561,11 +565,13 @@ void loginout(int clientfd, string)
     if (-1 == len)
     {
         cerr << "send loginout msg error -> " << buffer << endl;
-    }
-    else
+    }else
     {
+        cout<<"退出登录，注销成功！"<<endl;
+        g_isLoginSuccess = false;
         isMainMenuRunning = false;
-    }   
+    }
+    
 }
 
 // 获取系统时间（聊天信息需要添加时间信息）

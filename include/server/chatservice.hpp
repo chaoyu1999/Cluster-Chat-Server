@@ -69,8 +69,8 @@ public:
     void addGroup(const TcpConnectionPtr &conn, json &js, Timestamp time);
     // 群组聊天业务
     void groupChat(const TcpConnectionPtr &conn, json &js, Timestamp time);
-   
-
+    // 注销登录业务
+    void loginOutHandler(const TcpConnectionPtr &conn, json &js, Timestamp time);
 
     // 处理客户端异常退出
     void clientCloseExceptionHandler(const TcpConnectionPtr &conn);

@@ -13,6 +13,8 @@ ChatService::ChatService()
     _msgHandlerMap.insert({LOGIN_MSG, std::bind(&ChatService::loginHandler, this, _1, _2, _3)});          // 登录
     _msgHandlerMap.insert({ADD_FRIEND_MSG, std::bind(&ChatService::addFriendHandler, this, _1, _2, _3)}); // 加好友
     _msgHandlerMap.insert({ONE_CHAT_MSG, std::bind(&ChatService::oneChatHandler, this, _1, _2, _3)});     // 一对一聊天
+    _msgHandlerMap.insert({LOGINOUT_MSG, std::bind(&ChatService::loginOutHandler, this, _1, _2, _3)});    // 注销登录
+
     // 群组业务管理相关事件处理回调注册
     _msgHandlerMap.insert({CREATE_GROUP_MSG, std::bind(&ChatService::createGroup, this, _1, _2, _3)}); // 创群组
     _msgHandlerMap.insert({ADD_GROUP_MSG, std::bind(&ChatService::addGroup, this, _1, _2, _3)});       // 加群组
@@ -142,7 +144,9 @@ void ChatService::loginHandler(const TcpConnectionPtr &conn, json &js, Timestamp
 
             conn->send(response.dump());
         }
-    }else{// 用户名或密码错误
+    }
+    else
+    { // 用户名或密码错误
         json response;
         response["msgid"] = LOGIN_MSG_ACK;
         response["errno"] = 2;
@@ -151,19 +155,30 @@ void ChatService::loginHandler(const TcpConnectionPtr &conn, json &js, Timestamp
     }
 }
 
+// 注销登录
+void ChatService::loginOutHandler(const TcpConnectionPtr &conn, json &js, Timestamp time)
+{
+    // 让在线状态为offline
+    int id = js["id"].get<int>();     // 从数据中获取此id的用户
+    User user = _userModel.query(id); // 根据用户id查询用户信息
+    // 登注销成功，更新用户状态信息 state online => offline
+    user.setState("offline");
+    auto state = _userModel.updateState(user);
+    if (!state)
+    {
+        LOG_ERROR << "\nLoginout error on the id:" << id << "!";
+    }
+}
 
 // 添加朋友业务
 void ChatService::addFriendHandler(const TcpConnectionPtr &conn, json &js, Timestamp time)
 {
-    int userId = js["id"].get<int>(); // 获取用户id
+    int userId = js["id"].get<int>();         // 获取用户id
     int friendId = js["friendid"].get<int>(); // 获取加好友的id
 
     // 存储好友信息
     _friendModel.insert(userId, friendId); // 存储好友信息
 }
-
-
-
 
 // redis订阅消息触发的回调函数,这里channel其实就是id
 void ChatService::redis_subscribe_message_handler(int channel, string message)
@@ -236,8 +251,6 @@ void ChatService::clientCloseExceptionHandler(const TcpConnectionPtr &conn)
     }
 }
 
-
-
 // 一对一聊天业务
 void ChatService::oneChatHandler(const TcpConnectionPtr &conn, json &js, Timestamp time)
 {
@@ -267,8 +280,6 @@ void ChatService::oneChatHandler(const TcpConnectionPtr &conn, json &js, Timesta
     // toId 不在线则存储离线消息
     _offlineMsgModel.insert(toId, js.dump());
 }
-
-
 
 // 创建群组业务
 void ChatService::createGroup(const TcpConnectionPtr &conn, json &js, Timestamp time)
